@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: OmniSync Edge API
+  version: "0.40.0"
+servers:
+  - url: https://{project-ref}.functions.supabase.co/functions/v1
+    variables:
+      project-ref:
+        default: YOUR_SUPABASE_PROJECT_REF
+paths:
+  /orchestrate/lead-intake:
+    get:
+      summary: Health check
+      responses: { "200": { description: OK } }
+    post:
+      summary: Submit a lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenant_id: { type: string }
+                contact:
+                  type: object
+                  properties:
+                    name: { type: string }
+                    phone: { type: string }
+                    email: { type: string, format: email }
+                  required: []
+                tags: { type: array, items: { type: string } }
+                metadata: { type: object, additionalProperties: true }
+      responses:
+        "200": { description: Accepted }
+        "400": { description: Validation error }
+  /webhooks/signalhouse:
+    get: { summary: Health, responses: { "200": { description: OK } } }
+    post:
+      summary: SignalHouse webhook receiver
+      parameters:
+        - name: x-tenant-id
+          in: header
+          schema: { type: string }
+        - name: x-idempotency-key
+          in: header
+          schema: { type: string }
+      responses: { "200": { description: OK } }
+  /workers/process-lead:
+    get: { summary: Health, responses: { "200": { description: OK } } }
+    post:
+      summary: Process queued leads
+      parameters:
+        - name: batch
+          in: query
+          schema: { type: integer, default: 25, minimum: 1, maximum: 200 }
+      responses: { "200": { description: OK } }
+  /rl/choose-action:
+    get: { summary: Health, responses: { "200": { description: OK } } }
+    post:
+      summary: Choose next action for a lead
+      responses: { "200": { description: OK } }
+  /rl/report-outcome:
+    get: { summary: Health, responses: { "200": { description: OK } } }
+    post:
+      summary: Report outcome back to bandit
+      responses: { "200": { description: OK } }
+  /cron/retry-deadletters:
+    get: { summary: Health, responses: { "200": { description: OK } } }
+    post:
+      summary: Retry dead-letter items
+      responses: { "200": { description: OK } }
+components: {}
+
+
+/billing/usage-record:
+  get: { summary: Health, responses: { "200": { description: OK } } }
+  post:
+    summary: Record a usage event in Stripe
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              subscription_item: { type: string }
+              quantity: { type: integer, default: 1 }
+              timestamp: { type: integer, description: "Unix seconds" }
+    responses: { "200": { description: OK } }

@@ -1,0 +1,10 @@
+{
+  "name": "omnisync-edge-starter",
+  "version": "0.1.0",
+  "private": false,
+  "scripts": {
+    "release:patch": "node scripts/release.mjs patch",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:major": "node scripts/release.mjs major"
+  }
+}
