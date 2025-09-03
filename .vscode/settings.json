@@ -1,5 +1,4 @@
 {
-  // Deno configuration for Edge Functions
   "deno.enable": true,
   "deno.lint": true,
   "deno.unstable": true,
@@ -7,13 +6,9 @@
     "https://deno.land": true
   },
   "deno.importMap": "./supabase/functions/import_map.json",
-  
-  // TypeScript configuration
   "typescript.suggest.autoImports": true,
   "typescript.preferences.quoteStyle": "double",
   "typescript.format.semicolons": "insert",
-  
-  // Editor configuration
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.codeActionsOnSave": {
@@ -22,14 +17,10 @@
   },
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  
-  // File associations for Supabase
   "files.associations": {
     "*.sql": "sql",
     "Makefile": "makefile"
   },
-  
-  // Search and files
   "search.exclude": {
     "**/node_modules": true,
     "**/.git": true,
@@ -43,20 +34,12 @@
     "**/node_modules": true,
     "**/.supabase": true
   },
-  
-  // Terminal configuration for Supabase CLI
   "terminal.integrated.defaultProfile.linux": "bash",
   "terminal.integrated.env.linux": {
     "DENO_TLS_CA_STORE": "system"
   },
-  
-  // Supabase specific settings
   "supabase.projectRef": "${env:SUPABASE_PROJECT_REF}",
-  
-  // Auto-save configuration
   "files.autoSave": "onFocusChange",
-  
-  // Language specific settings
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },

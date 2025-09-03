@@ -19,7 +19,6 @@
     }
   ],
   "settings": {
-    // Workspace-specific settings that override user settings
     "deno.enable": true,
     "deno.lint": true,
     "deno.unstable": true,

@@ -1,42 +1,21 @@
 {
   "recommendations": [
-    // Deno support for Edge Functions
     "denoland.vscode-deno",
-    
-    // Supabase development
     "supabase.supabase",
-    
-    // SQL support
     "ms-mssql.mssql",
     "mtxr.sqltools",
     "mtxr.sqltools-driver-pg",
-    
-    // TypeScript and JavaScript
     "ms-vscode.vscode-typescript-next",
-    
-    // Git and version control
     "mhutchie.git-graph",
     "eamodio.gitlens",
-    
-    // Development tools
     "ms-vscode.vscode-json",
     "redhat.vscode-yaml",
     "ms-vscode.makefile-tools",
-    
-    // Code quality
     "esbenp.prettier-vscode",
     "bradlc.vscode-tailwindcss",
-    
-    // HTTP testing for API endpoints
     "humao.rest-client",
-    
-    // Environment variables
     "mikestead.dotenv",
-    
-    // Docker (if using containerized development)
     "ms-azuretools.vscode-docker",
-    
-    // Remote development
     "ms-vscode-remote.remote-containers",
     "ms-vscode-remote.remote-ssh"
   ]
