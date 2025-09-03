@@ -1,0 +1,195 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Deploy Edge Functions",
+      "type": "shell",
+      "command": "make",
+      "args": ["deploy"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Watch Logs",
+      "type": "shell",
+      "command": "make",
+      "args": ["logs"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Set Secrets",
+      "type": "shell",
+      "command": "make",
+      "args": ["secrets"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Database Push",
+      "type": "shell",
+      "command": "make",
+      "args": ["db-push"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Seed Database",
+      "type": "shell",
+      "command": "make",
+      "args": ["seed"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Demo",
+      "type": "shell",
+      "command": "make",
+      "args": ["magic"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Verify Endpoints",
+      "type": "shell",
+      "command": "make",
+      "args": ["verify"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Supabase Local",
+      "type": "shell",
+      "command": "supabase",
+      "args": ["start"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop Supabase Local",
+      "type": "shell",
+      "command": "supabase",
+      "args": ["stop"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Serve Functions Locally",
+      "type": "shell",
+      "command": "supabase",
+      "args": ["functions", "serve", "--env-file", ".env.local"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Lint TypeScript",
+      "type": "shell",
+      "command": "deno",
+      "args": ["lint", "supabase/functions/"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [
+        {
+          "owner": "deno",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.*):(\\d+):(\\d+)\\s+-\\s+(error|warning|info)\\s+-\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        }
+      ]
+    },
+    {
+      "label": "Format TypeScript",
+      "type": "shell",
+      "command": "deno",
+      "args": ["fmt", "supabase/functions/"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

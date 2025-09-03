@@ -1,0 +1,37 @@
+{
+  "name": "OmniSync Edge Starter",
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Edge Functions",
+      "path": "./supabase/functions"
+    },
+    {
+      "name": "SQL Scripts",
+      "path": "./sql"
+    },
+    {
+      "name": "Documentation",
+      "path": "./docs"
+    }
+  ],
+  "settings": {
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.unstable": true,
+    "editor.formatOnSave": true,
+    "files.autoSave": "onFocusChange"
+  },
+  "extensions": {
+    "recommendations": [
+      "denoland.vscode-deno",
+      "supabase.supabase",
+      "ms-mssql.mssql",
+      "mhutchie.git-graph",
+      "humao.rest-client"
+    ]
+  }
+}

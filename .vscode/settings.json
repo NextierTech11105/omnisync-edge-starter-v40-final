@@ -1,0 +1,55 @@
+{
+  "deno.enable": true,
+  "deno.lint": true,
+  "deno.unstable": true,
+  "deno.suggest.imports.hosts": {
+    "https://deno.land": true
+  },
+  "deno.importMap": "./supabase/functions/import_map.json",
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.format.semicolons": "insert",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "denoland.vscode-deno",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.associations": {
+    "*.sql": "sql",
+    "Makefile": "makefile"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/dist": true,
+    "**/.supabase": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.supabase": true
+  },
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.env.linux": {
+    "DENO_TLS_CA_STORE": "system"
+  },
+  "supabase.projectRef": "${env:SUPABASE_PROJECT_REF}",
+  "files.autoSave": "onFocusChange",
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[sql]": {
+    "editor.defaultFormatter": "ms-mssql.mssql"
+  }
+}

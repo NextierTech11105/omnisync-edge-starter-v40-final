@@ -1,0 +1,69 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Edge Function",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/supabase/functions/${input:functionName}/index.ts",
+      "runtimeArgs": [
+        "--allow-all",
+        "--unstable"
+      ],
+      "env": {
+        "SUPABASE_URL": "${env:SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${env:SUPABASE_SERVICE_ROLE_KEY}",
+        "STRIPE_SECRET_KEY": "${env:STRIPE_SECRET_KEY}"
+      },
+      "console": "integratedTerminal",
+      "runtimeExecutable": "deno"
+    },
+    {
+      "name": "Debug Webhook Handler",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/supabase/functions/webhooks/signalhouse/index.ts",
+      "runtimeArgs": [
+        "--allow-all",
+        "--unstable"
+      ],
+      "env": {
+        "SUPABASE_URL": "${env:SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${env:SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "console": "integratedTerminal",
+      "runtimeExecutable": "deno"
+    },
+    {
+      "name": "Debug Process Lead Worker",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/supabase/functions/workers/process-lead/index.ts",
+      "runtimeArgs": [
+        "--allow-all",
+        "--unstable"
+      ],
+      "env": {
+        "SUPABASE_URL": "${env:SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${env:SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "console": "integratedTerminal",
+      "runtimeExecutable": "deno"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "functionName",
+      "description": "Edge function to debug",
+      "type": "pickString",
+      "options": [
+        "webhooks/signalhouse",
+        "workers/process-lead",
+        "orchestrate/lead-intake",
+        "cron/retry-deadletters",
+        "billing/usage-record",
+        "rl/choose-action"
+      ]
+    }
+  ]
+}
