@@ -1,0 +1,67 @@
+# OmniSync Edge Functions API Testing
+# Use the REST Client extension to test these endpoints
+
+@baseUrl = {{$dotenv FUNCTIONS_URL}}
+@tenantId = public
+@contentType = application/json
+
+### Health Check - SignalHouse Webhook
+GET {{baseUrl}}/webhooks/signalhouse/health
+
+### Health Check - Process Lead Worker  
+GET {{baseUrl}}/workers/process-lead/health
+
+### Health Check - Lead Intake Orchestrator
+GET {{baseUrl}}/orchestrate/lead-intake/health
+
+### Test Lead Intake
+POST {{baseUrl}}/orchestrate/lead-intake
+Content-Type: {{contentType}}
+
+{
+  "contact": {
+    "phone": "+15550001111",
+    "name": "Test Lead",
+    "email": "test@example.com"
+  }
+}
+
+### Test SignalHouse Webhook
+POST {{baseUrl}}/webhooks/signalhouse
+Content-Type: {{contentType}}
+x-tenant-id: {{tenantId}}
+x-idempotency-key: test-{{$randomInt 1000 9999}}
+
+{
+  "event": "test_event",
+  "data": {
+    "userId": "user123",
+    "action": "demo"
+  }
+}
+
+### Process Lead Batch
+POST {{baseUrl}}/workers/process-lead?batch=5
+
+### Test Rate Limiter
+POST {{baseUrl}}/rl/choose-action
+Content-Type: {{contentType}}
+
+{
+  "userId": "test-user-123",
+  "action": "api_call"
+}
+
+### Test Billing Usage Record
+POST {{baseUrl}}/billing/usage-record
+Content-Type: {{contentType}}
+
+{
+  "customer_id": "cus_test123",
+  "subscription_item_id": "si_test123",
+  "quantity": 1,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Retry Dead Letters
+POST {{baseUrl}}/cron/retry-deadletters
