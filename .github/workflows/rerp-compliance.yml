@@ -1,0 +1,180 @@
+name: RERP Compliance Audit
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+  schedule:
+    # Run compliance audit daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+jobs:
+  compliance-audit:
+    name: RERP / compliance-audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Run RERP Compliance Audit
+        run: node scripts/realestate-audit.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rerp-compliance-audit-${{ github.run_id }}
+          path: |
+            .realestate/
+            docs/RERP_*.md
+          retention-days: 30
+
+      - name: Comment PR with audit results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            try {
+              // Run audit and capture output
+              const auditOutput = execSync('node scripts/realestate-audit.mjs', { 
+                encoding: 'utf8',
+                cwd: process.cwd()
+              });
+              
+              const comment = `## 🔍 RERP Compliance Audit Results
+              
+              \`\`\`
+              ${auditOutput}
+              \`\`\`
+              
+              **Status**: ✅ Compliance audit completed
+              **Timestamp**: ${new Date().toISOString()}
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              const errorComment = `## 🚨 RERP Compliance Audit Failed
+              
+              \`\`\`
+              ${error.message}
+              \`\`\`
+              
+              **Status**: ❌ Compliance audit failed
+              **Timestamp**: ${new Date().toISOString()}
+              
+              Please review the audit requirements and fix any compliance issues.
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: errorComment
+              });
+              
+              throw error;
+            }
+
+  protection-validation:
+    name: Protection Configuration Validation
+    runs-on: ubuntu-latest
+    needs: compliance-audit
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate protection JSON files
+        run: |
+          echo "🔍 Validating protection configurations..."
+          
+          # Check if protection files exist and are valid JSON
+          for file in .realestate/protection/*.json; do
+            if [ -f "$file" ]; then
+              echo "Validating $file..."
+              if jq empty "$file" >/dev/null 2>&1; then
+                echo "✅ $file is valid JSON"
+              else
+                echo "❌ $file is invalid JSON"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ All protection configurations are valid"
+
+      - name: Check required protection files
+        run: |
+          echo "🔍 Checking required protection files..."
+          
+          required_files=(
+            ".realestate/protection/deal-protect.json"
+            ".realestate/protection/branch-protect.json" 
+            ".realestate/protection/repo-protect.json"
+          )
+          
+          missing_files=()
+          
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_files+=("$file")
+            else
+              echo "✅ Found: $file"
+            fi
+          done
+          
+          if [ ${#missing_files[@]} -ne 0 ]; then
+            echo "❌ Missing required protection files:"
+            printf '%s\n' "${missing_files[@]}"
+            echo ""
+            echo "Run 'make rerp-apply' to create missing protection files"
+            exit 1
+          fi
+          
+          echo "✅ All required protection files are present"
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'

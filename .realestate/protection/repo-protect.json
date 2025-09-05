@@ -1,0 +1,41 @@
+{
+  "allow_squash_merge": true,
+  "allow_merge_commit": false,
+  "allow_rebase_merge": true,
+  "allow_auto_merge": false,
+  "delete_branch_on_merge": true,
+  "has_issues": true,
+  "has_projects": true,
+  "has_wiki": false,
+  "has_downloads": true,
+  "has_vulnerability_alerts": true,
+  "security_and_analysis": {
+    "secret_scanning": {
+      "status": "enabled"
+    },
+    "secret_scanning_push_protection": {
+      "status": "enabled"
+    },
+    "dependency_graph": {
+      "status": "enabled"
+    },
+    "dependabot_security_updates": {
+      "status": "enabled"
+    }
+  },
+  "private": false,
+  "archived": false,
+  "disabled": false,
+  "default_branch_protection": {
+    "enabled": true,
+    "required_status_checks": true,
+    "enforce_admins": true,
+    "required_pull_request_reviews": true
+  },
+  "rerp_specific": {
+    "financial_audit_required": true,
+    "compliance_audit_required": true,
+    "deal_protection_enabled": true,
+    "regulatory_compliance": "enabled"
+  }
+}
