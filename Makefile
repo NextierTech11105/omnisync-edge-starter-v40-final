@@ -1,5 +1,5 @@
   # OmniSync Edge Starter — Makefile (enhanced)
-  .PHONY: deploy logs secrets db-push seed test ci magic verify stripe-trigger openapi sdks
+  .PHONY: deploy logs secrets db-push seed test ci magic verify stripe-trigger openapi sdks rerp-audit rerp-apply rerp-remove
 
   deploy:
 	@echo "🚀 Deploying edge functions..."
@@ -55,3 +55,21 @@
 
   sdks:
 	@echo "📦 Minimal SDKs in /sdks (node.ts, python.py)"
+
+  # RERP (Real Estate Repository Protection) targets
+  rerp-audit:
+	@echo "🔍 Running RERP compliance audit..."
+	node scripts/realestate-audit.mjs
+	@echo "✅ RERP audit complete"
+
+  rerp-apply:
+	@echo "🛡️  Applying RERP protections..."
+	node scripts/apply-protection.mjs
+	@echo "✅ RERP protections applied"
+
+  rerp-remove:
+	@echo "🚨 EMERGENCY: Removing RERP protections..."
+	@echo "⚠️  This should only be used in emergency situations!"
+	@read -p "Are you sure? Type 'CONFIRM' to proceed: " confirm && [ "$$confirm" = "CONFIRM" ] || (echo "❌ Operation cancelled" && exit 1)
+	node scripts/remove-protection.mjs --force
+	@echo "⚠️  RERP protections removed"

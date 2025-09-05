@@ -1,0 +1,269 @@
+name: RERP Financial Audit
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**.json'
+      - '**.sql'
+      - '**/financial/**'
+      - '**/transactions/**'
+      - '**/deals/**'
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**.json'
+      - '**.sql'
+      - '**/financial/**'
+      - '**/transactions/**'
+      - '**/deals/**'
+  workflow_dispatch:
+  schedule:
+    # Run financial audit weekly on Sundays at 8 AM UTC
+    - cron: '0 8 * * 0'
+
+jobs:
+  financial-audit:
+    name: RERP / financial-audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Financial Data Validation
+        run: |
+          echo "🔍 Starting RERP Financial Audit..."
+          
+          # Check for financial data patterns in changed files
+          if git diff --name-only HEAD~1..HEAD | grep -E '\.(sql|json)$' >/dev/null 2>&1; then
+            echo "📊 Financial files detected, running validation..."
+            
+            # Validate SQL files for financial transactions
+            for file in $(git diff --name-only HEAD~1..HEAD | grep '\.sql$'); do
+              if [ -f "$file" ]; then
+                echo "Validating SQL file: $file"
+                # Check for suspicious financial patterns
+                if grep -i -E "(insert|update|delete).*transaction|money|payment|amount" "$file" >/dev/null 2>&1; then
+                  echo "⚠️  Financial transaction detected in $file - requires review"
+                fi
+              fi
+            done
+            
+            # Validate JSON files for financial data
+            for file in $(git diff --name-only HEAD~1..HEAD | grep '\.json$'); do
+              if [ -f "$file" ]; then
+                echo "Validating JSON file: $file"
+                # Check for financial data structures
+                if jq -e '.amount or .price or .cost or .payment or .transaction' "$file" >/dev/null 2>&1; then
+                  echo "⚠️  Financial data detected in $file - requires audit"
+                fi
+              fi
+            done
+          else
+            echo "ℹ️  No financial files changed in this commit"
+          fi
+
+      - name: Transaction Integrity Check
+        run: |
+          echo "🔐 Running transaction integrity checks..."
+          
+          # Check for deal protection compliance
+          if [ -f ".realestate/protection/deal-protect.json" ]; then
+            echo "✅ Deal protection configuration found"
+            
+            # Validate deal protection settings
+            if jq -e '.required_status_checks.contexts | contains(["RERP / financial-audit"])' .realestate/protection/deal-protect.json >/dev/null 2>&1; then
+              echo "✅ Financial audit is required for deal protection"
+            else
+              echo "⚠️  Financial audit not enforced in deal protection"
+            fi
+          else
+            echo "❌ Deal protection configuration missing"
+            exit 1
+          fi
+
+      - name: Compliance Report Generation
+        run: |
+          echo "📋 Generating financial compliance report..."
+          
+          # Create compliance report
+          cat > financial-audit-report.md << EOF
+          # RERP Financial Audit Report
+          
+          **Audit Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Repository**: ${{ github.repository }}
+          **Commit**: ${{ github.sha }}
+          **Branch**: ${{ github.ref_name }}
+          
+          ## Audit Summary
+          
+          ### Financial Files Reviewed
+          $(git diff --name-only HEAD~1..HEAD | grep -E '\.(sql|json)$' | wc -l) files reviewed
+          
+          ### Compliance Status
+          - Deal Protection: $([ -f ".realestate/protection/deal-protect.json" ] && echo "✅ Configured" || echo "❌ Missing")
+          - Financial Audit Enforcement: $(jq -e '.required_status_checks.contexts | contains(["RERP / financial-audit"])' .realestate/protection/deal-protect.json >/dev/null 2>&1 && echo "✅ Enabled" || echo "❌ Disabled")
+          - Transaction Validation: ✅ Completed
+          
+          ### Recommendations
+          - Ensure all financial transactions are properly documented
+          - Verify deal protection settings are enforced
+          - Review financial data access controls
+          
+          **Status**: $([ $? -eq 0 ] && echo "✅ PASSED" || echo "❌ FAILED")
+          EOF
+          
+          echo "📄 Financial audit report generated"
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rerp-financial-audit-report-${{ github.run_id }}
+          path: financial-audit-report.md
+          retention-days: 90
+
+      - name: Comment PR with financial audit results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let reportContent = '';
+            try {
+              if (fs.existsSync('financial-audit-report.md')) {
+                reportContent = fs.readFileSync('financial-audit-report.md', 'utf8');
+              }
+            } catch (error) {
+              reportContent = `Error reading financial audit report: ${error.message}`;
+            }
+            
+            const comment = `## 💰 RERP Financial Audit Results
+            
+            ${reportContent}
+            
+            ---
+            **Audit Completed**: ${new Date().toISOString()}
+            **Workflow**: Financial Audit
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  deal-validation:
+    name: Deal Protection Validation
+    runs-on: ubuntu-latest
+    needs: financial-audit
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate deal protection settings
+        run: |
+          echo "🏠 Validating deal protection configuration..."
+          
+          if [ ! -f ".realestate/protection/deal-protect.json" ]; then
+            echo "❌ Deal protection configuration not found"
+            echo "Run 'make rerp-apply' to create the configuration"
+            exit 1
+          fi
+          
+          echo "✅ Deal protection configuration found"
+          
+          # Validate JSON structure
+          if ! jq empty .realestate/protection/deal-protect.json >/dev/null 2>&1; then
+            echo "❌ Deal protection configuration is invalid JSON"
+            exit 1
+          fi
+          
+          echo "✅ Deal protection configuration is valid JSON"
+          
+          # Check required fields
+          required_fields=("required_status_checks" "enforce_admins" "required_approving_review_count")
+          
+          for field in "${required_fields[@]}"; do
+            if jq -e "has(\"$field\")" .realestate/protection/deal-protect.json >/dev/null 2>&1; then
+              echo "✅ Required field '$field' is present"
+            else
+              echo "❌ Required field '$field' is missing"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Deal protection validation completed successfully"
+
+  regulatory-compliance:
+    name: Regulatory Compliance Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for sensitive financial data
+        run: |
+          echo "🔍 Scanning for sensitive financial data..."
+          
+          # Define patterns for sensitive financial information
+          sensitive_patterns=(
+            "account.*number"
+            "routing.*number"
+            "ssn|social.*security"
+            "tax.*id"
+            "credit.*card"
+            "bank.*account"
+          )
+          
+          found_sensitive=false
+          
+          for pattern in "${sensitive_patterns[@]}"; do
+            if git grep -i -E "$pattern" -- '*.json' '*.sql' '*.md' '*.txt' >/dev/null 2>&1; then
+              echo "⚠️  Potential sensitive data pattern found: $pattern"
+              found_sensitive=true
+            fi
+          done
+          
+          if [ "$found_sensitive" = true ]; then
+            echo "❌ Sensitive financial data patterns detected"
+            echo "Please review and ensure no actual sensitive data is committed"
+            exit 1
+          else
+            echo "✅ No sensitive financial data patterns detected"
+          fi
+
+      - name: Validate compliance documentation
+        run: |
+          echo "📚 Checking compliance documentation..."
+          
+          required_docs=(
+            "docs/RERP_COMPLIANCE.md"
+            "docs/RERP_FINANCIAL_AUDIT.md"
+          )
+          
+          for doc in "${required_docs[@]}"; do
+            if [ -f "$doc" ]; then
+              echo "✅ Found: $doc"
+            else
+              echo "⚠️  Missing: $doc"
+            fi
+          done
+          
+          echo "✅ Compliance documentation check completed"
